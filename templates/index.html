@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Quiz App</h1>
+        
+        <!-- Authentication Section -->
+        <div id="authSection">
+            <h2>Login / Signup</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="signup()">Signup</button>
+            <button onclick="login()">Login</button>
+        </div>
+        
+        <!-- Quiz Section -->
+        <div id="quizSection" style="display:none;">
+            <h2>Fetch Questions</h2>
+            <input type="text" id="subject" placeholder="Enter Subject">
+            <button onclick="fetchQuestions()">Get Questions</button>
+            <div id="questionsList"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="display:none;">
+            <h2>Your Results</h2>
+            <button onclick="getResults()">View Score</button>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Signup
+        function signup() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            fetch('/sign-up', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message))
+            .catch(err => console.error('Signup Error:', err));
+        }
+
+        // Login
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    alert("Login successful");
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('quizSection').style.display = 'block';
+                    document.getElementById('resultsSection').style.display = 'block';
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => console.error('Login Error:', err));
+        }
+
+        // Fetch Questions
+        function fetchQuestions() {
+            const subject = document.getElementById('subject').value;
+            fetch(`/get-questions?subject=${subject}`, {
+                method: 'GET',
+                headers: { 'Authorization': localStorage.getItem('token') }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const questionsList = document.getElementById('questionsList');
+                questionsList.innerHTML = "";
+                if (data.error) {
+                    questionsList.innerHTML = `<p>${data.error}</p>`;
+                } else {
+                    data.forEach(q => {
+                        questionsList.innerHTML += `
+                            <div class="question">
+                                <p><strong>${q.question}</strong></p>
+                                <input type="text" id="answer_${q.question_id}" placeholder="Your Answer">
+                                <button onclick="submitAnswer(${q.question_id})">Submit Answer</button>
+                            </div>
+                        `;
+                    });
+                }
+            })
+            .catch(err => console.error('Fetch Questions Error:', err));
+        }
+
+        // Submit Answer
+        function submitAnswer(question_id) {
+            const submitted_answer = document.getElementById(`answer_${question_id}`).value;
+            fetch('/submit-answer', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': localStorage.getItem('token') 
+                },
+                body: JSON.stringify({ question_id, submitted_answer })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message))
+            .catch(err => console.error('Submit Answer Error:', err));
+        }
+
+        // Get Results
+        function getResults() {
+            fetch('/get-results', {
+                method: 'GET',
+                headers: { 'Authorization': localStorage.getItem('token') }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('results').innerHTML = 
+                    `<p>Total Questions: ${data.total_questions}</p>
+                     <p>Your Score: ${data.score}</p>`;
+            })
+            .catch(err => console.error('Get Results Error:', err));
+        }
+    </script>
+</body>
+</html>
