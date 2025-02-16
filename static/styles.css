@@ -1,11 +1,15 @@
+/* General Body Styling */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
     text-align: center;
+    animation: fadeIn 1s ease-in-out;
+
 }
 
+/* Container Styling with Fade-in Effect */
 .container {
     width: 50%;
     margin: auto;
@@ -14,23 +18,119 @@ body {
     border-radius: 10px;
     box-shadow: 0px 0px 10px gray;
     margin-top: 50px;
+    animation: slideIn 1s ease-in-out;
+ 
 }
 
-input, button {
+/* Input and Button Styling */
+input{
+    justify-content: center;
     display: block;
-    width: 100%;
+    width: 50%;
     margin: 10px 0;
     padding: 10px;
     font-size: 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-left: 25%;
+}
+ button {
+    justify-content: center;
+    display: block;
+    width: 60%;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-left: 21%;
 }
 
+/* Button Styling */
 button {
-    background-color: #007bff;
+    background-color: #e88a16;
     color: white;
     border: none;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Button Hover Effect */
 button:hover {
-    background-color: #0056b3;
+    background-color: #dd9c24;
+    transform: scale(1.01);
+}
+
+/* Button Click Animation */
+button:active {
+    transform: scale(0.95);
+}
+
+/* Input Focus Effect */
+input:focus {
+    border: 2px solid #007bff;
+    outline: none;
+    box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.5);
+}
+
+/* Hover Glow Effect for Input */
+input:hover {
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 80%;
+    }
+}
+/* Popup Alert Box */
+.popup {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    z-index: 1000;
+}
+
+/* Show Popup */
+.popup.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Error Popup */
+.popup.error {
+    background-color: #FF5252;
 }

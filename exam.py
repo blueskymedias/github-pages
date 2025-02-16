@@ -131,7 +131,7 @@ def login_user():
     payload = {
         'username': username,
         'user_id': user[0],
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expiration time
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=1)  # Token expiration time
     }
     # Generate the token
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
@@ -192,7 +192,6 @@ def get_questions():
     else:
       return jsonify({"message": "no question found or check the subject"}), 404
 
-
 @app.route('/submit-answer', methods=['POST'])
 def submit_answer():
     jwt_token = request.headers.get('Authorization')
@@ -202,6 +201,7 @@ def submit_answer():
     
     question_id = request.json['question_id']
     submitted_answer = request.json['submitted_answer']
+    
 
     if decoded_token_payload is None:
     

@@ -37,87 +37,111 @@
     </div>
 
     <script>
-        // Signup
-        function signup() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            fetch('/sign-up', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(res => res.json())
-            .then(data => alert(data.message))
-            .catch(err => console.error('Signup Error:', err));
-        }
+   // Function to Show Popup with Animation
+function showPopup(message, type = "success") {
+    let popup = document.createElement("div");
+    popup.className = `popup ${type}`;
+    popup.innerText = message;
+    
+    document.body.appendChild(popup);
+    
+    // Show popup with animation
+    setTimeout(() => {
+        popup.classList.add("show");
+    }, 100);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        popup.classList.remove("show");
+        setTimeout(() => popup.remove(), 500);
+    }, 3000);
+}
 
-        // Login
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    alert("Login successful");
-                    document.getElementById('authSection').style.display = 'none';
-                    document.getElementById('quizSection').style.display = 'block';
-                    document.getElementById('resultsSection').style.display = 'block';
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(err => console.error('Login Error:', err));
+// Example Usage in API Responses
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            showPopup("Login successful!", "success");
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+        } else {
+            showPopup(data.message, "error");
         }
+    })
+    .catch(err => showPopup("Login failed!", "error"));
+}
+
 
         // Fetch Questions
         function fetchQuestions() {
-            const subject = document.getElementById('subject').value;
-            fetch(`/get-questions?subject=${subject}`, {
-                method: 'GET',
-                headers: { 'Authorization': localStorage.getItem('token') }
-            })
-            .then(res => res.json())
-            .then(data => {
-                const questionsList = document.getElementById('questionsList');
-                questionsList.innerHTML = "";
-                if (data.error) {
-                    questionsList.innerHTML = `<p>${data.error}</p>`;
-                } else {
-                    data.forEach(q => {
-                        questionsList.innerHTML += `
-                            <div class="question">
-                                <p><strong>${q.question}</strong></p>
-                                <input type="text" id="answer_${q.question_id}" placeholder="Your Answer">
-                                <button onclick="submitAnswer(${q.question_id})">Submit Answer</button>
-                            </div>
-                        `;
-                    });
-                }
-            })
-            .catch(err => console.error('Fetch Questions Error:', err));
+    const subject = document.getElementById('subject').value;
+    fetch(`/get-questions?subject=${subject}`, {
+        method: 'GET',
+        headers: { 'Authorization': localStorage.getItem('token') }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const questionsList = document.getElementById('questionsList');
+        questionsList.innerHTML = "";
+        
+        if (data.error) {
+            questionsList.innerHTML = `<p>${data.error}</p>`;
+        } else {
+            data.forEach(q => {
+                questionsList.innerHTML += `
+                    <div class="question">
+                        <p><strong>${q.question}</strong></p>
+                        <input type="text" id="answer_${q.question_id}" placeholder="Your Answer">
+                        <button id="submit_${q.question_id}" class="submit-btn" onclick="submitAnswer(${q.question_id})">
+                            Submit Answer
+                        </button>
+                    </div>
+                `;
+            });
         }
+    })
+    .catch(err => console.error('Fetch Questions Error:', err));
+}
+
+
 
         // Submit Answer
-        function submitAnswer(question_id) {
-            const submitted_answer = document.getElementById(`answer_${question_id}`).value;
-            fetch('/submit-answer', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': localStorage.getItem('token') 
-                },
-                body: JSON.stringify({ question_id, submitted_answer })
-            })
-            .then(res => res.json())
-            .then(data => alert(data.message))
-            .catch(err => console.error('Submit Answer Error:', err));
+      // Submit Answer with Popup Notification
+function submitAnswer(question_id) {
+    const submitted_answer = document.getElementById(`answer_${question_id}`).value;
+    const submitButton = document.getElementById(`submit_${question_id}`);
+
+    fetch('/submit-answer', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': localStorage.getItem('token') 
+        },
+        body: JSON.stringify({ question_id, submitted_answer })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message) {
+            showPopup("Answer submitted successfully!", "success");
+            submitButton.disabled = true;  // Disable button after submission
+            submitButton.style.backgroundColor = "#ccc";  // Change button color
+        } else {
+            showPopup("Submission failed!", "error");
         }
+    })
+    .catch(err => showPopup("Time over", "error"));
+}
+
 
         // Get Results
         function getResults() {
